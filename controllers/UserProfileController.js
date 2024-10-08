@@ -1,0 +1,140 @@
+// const { Op } = require("sequelize");
+const UserProfileRepo = require("../repos/UserProfileRepo.js");
+const {
+  validateCreateUserProfile,
+  validateUpdateUser,
+} = require("../validators/UserProfileValidator.js");
+const BaseController = require("./BaseController.js");
+
+class UserProfileController extends BaseController {
+  constructor() {
+    super();
+  }
+
+  //   getPermissionById = async (req, res) => {
+  //     const { id } = req.params;
+  //     const permission = await PermissionRepo.findById(id);
+
+  //     if (!permission) {
+  //       return this.errorResponse(res, "Permission ID not found", 404);
+  //     }
+
+  //     return this.successResponse(
+  //       res,
+  //       permission,
+  //       "Permission retrieved successfully"
+  //     );
+  //   };
+
+  //   getAllPermission = async (req, res) => {
+  //     const sortOrder = req?.query?.sortOrder || "id";
+  //     const sortDirection = req?.query?.sortDirection || "Desc";
+
+  //     const customQuery = {
+  //       order: [[sortOrder, sortDirection]],
+  //       where: {
+  //         isDeleted: false,
+  //       },
+  //       limit: parseInt(req.query.limit) || 10,
+  //       offset: parseInt(req.query.skip) || 0,
+  //     };
+
+  //     if (req?.query?.name) {
+  //       customQuery.where.name = {
+  //         [Op.like]: `%${req?.query?.name}%`,
+  //       };
+  //     }
+
+  //     // for searching
+  //     if (req?.query?.module) {
+  //       customQuery.where.module = {
+  //         [Op.like]: `%${req?.query?.module}%`,
+  //       };
+  //     }
+
+  //     // for filtering
+  //     if (req?.query?.module) {
+  //       customQuery.where.module = {
+  //         [Op.eq]: `${req?.query?.module}`,
+  //       };
+  //     }
+
+  //     const permissions = await PermissionRepo.getPermissions(customQuery);
+
+  //     const count = await PermissionRepo.countPermission({
+  //       where: customQuery.where,
+  //     });
+
+  //     if (!permissions.length) {
+  //       return this.errorResponse(res, "No matching permissions found", 404);
+  //     }
+
+  //     return this.successResponse(
+  //       res,
+  //       {
+  //         permissions,
+  //         total: count,
+  //       },
+  //       "Permissions retrieved successfully"
+  //     );
+  //   };
+
+  createUserProfile = async (req, res) => {
+    const validationResult = validateCreateUserProfile(req.body);
+
+    if (!validationResult.status) {
+      return this.validationErrorResponse(res, validationResult.message);
+    }
+
+    const user = await UserProfileRepo.createUserProfile(req.body);
+
+    return this.successResponse(res, user, "User created successfully");
+  };
+
+  //   updatePermission = async (req, res) => {
+
+  //     const { id } = req.params;
+  //     const validationResult = validateUpdatePermission(req.body);
+
+  //     if (!validationResult.status) {
+  //       return this.validationErrorResponse(res, validationResult.message);
+  //     }
+
+  //     const isPermission = PermissionRepo.isPermissionExists(id); // check if permission exists
+
+  //     if (!isPermission) {
+  //       return this.errorResponse(res, "Permission ID not found", 404); // fix error message
+  //     }
+
+  //     const permission = await PermissionRepo.updatePermission(req.body, id);
+
+  //     return this.successResponse(
+  //       res,
+  //       permission,
+  //       "Permission updated successfully"
+  //     );
+  //   };
+
+  //   deletePermission = async (req, res) => {
+  //     let { id } = req?.params;
+  //     let { type } = req?.query;
+
+  //     const isPermission = PermissionRepo.isPermissionExists(id); // check if permission exists
+
+  //     if (!isPermission) {
+  //       return this.errorResponse(res, "Permission ID not found", 404); // fix error message
+  //     }
+
+  //     type = type ? type : "soft";
+
+  //     const permission = await PermissionRepo.deletePermission(id, type);
+
+  //     return this.successResponse(
+  //       res,
+  //       permission,
+  //       `Permission with ID ${id} deleted successfully`
+  //     );
+  //   };
+}
+
+module.exports = new UserProfileController();
