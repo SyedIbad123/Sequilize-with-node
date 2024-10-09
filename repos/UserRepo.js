@@ -2,14 +2,27 @@ const BaseRepository = require("./BaseRepo.js");
 const db = require("../models/index.js");
 
 class UserRepo extends BaseRepository {
-  model;
   constructor() {
-    super(db.Permission);
+    super(db.User);
     this.model = db.User;
   }
 
   async createUser(user) {
     return this.create(user);
+  }
+
+  async createUserAndProfile(user) {
+    const transaction = await db.sequelize.transaction();
+
+    const createdUser = await this.create(user, { transaction });
+
+    const createdProfile = await db.UserProfile.create(
+      { ...user.profile, userId: createdUser.id },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return { user: createdUser, profile: createdProfile };
   }
 
   async getPermissions(searchQuery = {}) {
