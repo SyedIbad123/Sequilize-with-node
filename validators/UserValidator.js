@@ -16,6 +16,16 @@ class UserValidator extends BaseValidator {
       password: Joi.string().required().label("password"),
       isNewUser: Joi.boolean().required().label("isNewUser"),
       isDeleted: Joi.boolean().optional(),
+      profile: Joi.object()
+        .keys({
+          contactNo: Joi.string().required().label("Contact Number"),
+          cnic: Joi.string().required().label("CNIC"),
+          city: Joi.string().required().label("City"),
+          branch: Joi.string().required().label("Branch"),
+          isDeleted: Joi.boolean().optional(),
+        })
+        .required()
+        .label("Profile"),
     });
 
     return this.validate(schema, user);
