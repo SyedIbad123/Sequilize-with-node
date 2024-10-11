@@ -2,9 +2,8 @@ const BaseRepository = require("./BaseRepo.js");
 const db = require("../models/index.js");
 
 class UserProfileRepo extends BaseRepository {
-  model;
   constructor() {
-    super(db.Permission);
+    super(db.UserProfile);
     this.model = db.UserProfile;
   }
 
@@ -12,20 +11,20 @@ class UserProfileRepo extends BaseRepository {
     return this.create(userprofile);
   }
 
-  async getPermissions(searchQuery = {}) {
+  async getUserProfiles(searchQuery = {}) {
     return this.findAll(searchQuery);
   }
 
-  async updatePermission(permission, id) {
+  async updateUserProfile(userprofile, id) {
     // R&D on find by id and update
-    return this.update(permission, { id }), this.findById(id);
+    return this.update(userprofile, { id }), this.findById(id);
   }
 
   async findById(id) {
     return this.findOne({ id });
   }
 
-  async deletePermission(id, type = "soft") {
+  async deleteUserProfile(id, type = "soft") {
     return this.delete(id, type);
   }
 
@@ -37,7 +36,7 @@ class UserProfileRepo extends BaseRepository {
   //   return this.findOneWithInclude(searchQuery);
   // }
 
-  async isPermissionExists(id) {
+  async isUserProfileExists(id) {
     return this.count({
       id,
     });
