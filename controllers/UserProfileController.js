@@ -1,8 +1,7 @@
 // const { Op } = require("sequelize");
 const UserProfileRepo = require("../repos/UserProfileRepo.js");
 const {
-  validateCreateUserProfile,
-  validateUpdateUser,
+  validateUpdateUserProfile,
 } = require("../validators/UserProfileValidator.js");
 const BaseController = require("./BaseController.js");
 
@@ -11,130 +10,94 @@ class UserProfileController extends BaseController {
     super();
   }
 
-  //   getPermissionById = async (req, res) => {
-  //     const { id } = req.params;
-  //     const permission = await PermissionRepo.findById(id);
+  getUserProfileById = async (req, res) => {
+    const { id } = req?.params;
+    const user = await UserProfileRepo.findById(id);
 
-  //     if (!permission) {
-  //       return this.errorResponse(res, "Permission ID not found", 404);
-  //     }
+    if (!user) {
+      return this.errorResponse(res, "User ID not found", 404);
+    }
 
-  //     return this.successResponse(
-  //       res,
-  //       permission,
-  //       "Permission retrieved successfully"
-  //     );
-  //   };
+    return this.successResponse(res, user, "User retrieved successfully");
+  };
 
-  //   getAllPermission = async (req, res) => {
-  //     const sortOrder = req?.query?.sortOrder || "id";
-  //     const sortDirection = req?.query?.sortDirection || "Desc";
+  getAllUserProfiles = async (req, res) => {
+    const {
+      sortBy = "id",
+      sortOrder = "DESC",
+      page = 1,
+      limit = 10,
+      search = "",
+      filterByName,
+      filterByEmail,
+      filterByStatus,
+    } = req?.query;
 
-  //     const customQuery = {
-  //       order: [[sortOrder, sortDirection]],
-  //       where: {
-  //         isDeleted: false,
-  //       },
-  //       limit: parseInt(req.query.limit) || 10,
-  //       offset: parseInt(req.query.skip) || 0,
-  //     };
+    const skip = (page - 1) * limit;
+    const searchParams = {};
 
-  //     if (req?.query?.name) {
-  //       customQuery.where.name = {
-  //         [Op.like]: `%${req?.query?.name}%`,
-  //       };
-  //     }
+    const customQuery = {
+      where: {
+        isDeleted: false,
+        ...searchParams,
+      },
+    };
 
-  //     // for searching
-  //     if (req?.query?.module) {
-  //       customQuery.where.module = {
-  //         [Op.like]: `%${req?.query?.module}%`,
-  //       };
-  //     }
+    if (search) {
+      searchParams[db.sequelize.Op.or] = [{}];
+    }
 
-  //     // for filtering
-  //     if (req?.query?.module) {
-  //       customQuery.where.module = {
-  //         [Op.eq]: `${req?.query?.module}`,
-  //       };
-  //     }
+    const userProfiles = await UserProfileRepo.getUserProfiles(customQuery);
 
-  //     const permissions = await PermissionRepo.getPermissions(customQuery);
+    if (!userProfiles.length) {
+      return this.errorResponse(res, "User Profiles not found", 404);
+    }
 
-  //     const count = await PermissionRepo.countPermission({
-  //       where: customQuery.where,
-  //     });
+    return this.successResponse(
+      res,
+      userProfiles,
+      "User Profiles retrieved successfully"
+    );
+  };
 
-  //     if (!permissions.length) {
-  //       return this.errorResponse(res, "No matching permissions found", 404);
-  //     }
-
-  //     return this.successResponse(
-  //       res,
-  //       {
-  //         permissions,
-  //         total: count,
-  //       },
-  //       "Permissions retrieved successfully"
-  //     );
-  //   };
-
-  createUserProfile = async (req, res) => {
-    const validationResult = validateCreateUserProfile(req.body);
+  updateUserProfile = async (req, res) => {
+    const { id } = req?.params;
+    const validationResult = validateUpdateUserProfile(req?.body);
 
     if (!validationResult.status) {
       return this.validationErrorResponse(res, validationResult.message);
     }
 
-    const user = await UserProfileRepo.createUserProfile(req.body);
+    const isUserProfile = await UserProfileRepo.isUserProfileExists(id);
 
-    return this.successResponse(res, user, "User created successfully");
+    if (!isUserProfile) {
+      return this.errorResponse(res, "User Profile ID not found", 404);
+    }
+
+    const user = await UserProfileRepo.updateUserProfile(req.body, id);
+    return this.successResponse(res, user, "User Profile updated successfully");
   };
 
-  //   updatePermission = async (req, res) => {
+  deleteUserProfile = async (req, res) => {
+    let { id } = req?.params;
+    let { type } = req?.query;
 
-  //     const { id } = req.params;
-  //     const validationResult = validateUpdatePermission(req.body);
+    const isUserProfile = UserProfileRepo.isUserProfileExists(id);
 
-  //     if (!validationResult.status) {
-  //       return this.validationErrorResponse(res, validationResult.message);
-  //     }
+    if (!isUserProfile) {
+      return this.errorResponse(res, "User Profile ID not found", 404);
+    }
 
-  //     const isPermission = PermissionRepo.isPermissionExists(id); // check if permission exists
+    type = type ? type : "soft";
 
-  //     if (!isPermission) {
-  //       return this.errorResponse(res, "Permission ID not found", 404); // fix error message
-  //     }
+    const permission = await UserProfileRepo.deleteUserProfile(id, type);
 
-  //     const permission = await PermissionRepo.updatePermission(req.body, id);
-
-  //     return this.successResponse(
-  //       res,
-  //       permission,
-  //       "Permission updated successfully"
-  //     );
-  //   };
-
-  //   deletePermission = async (req, res) => {
-  //     let { id } = req?.params;
-  //     let { type } = req?.query;
-
-  //     const isPermission = PermissionRepo.isPermissionExists(id); // check if permission exists
-
-  //     if (!isPermission) {
-  //       return this.errorResponse(res, "Permission ID not found", 404); // fix error message
-  //     }
-
-  //     type = type ? type : "soft";
-
-  //     const permission = await PermissionRepo.deletePermission(id, type);
-
-  //     return this.successResponse(
-  //       res,
-  //       permission,
-  //       `Permission with ID ${id} deleted successfully`
-  //     );
-  //   };
+    return this.successResponse(
+      res,
+      permission,
+      `User Profile with ID ${id} deleted successfully`
+    );
+  };
 }
 
 module.exports = new UserProfileController();
