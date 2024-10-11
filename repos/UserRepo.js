@@ -12,33 +12,30 @@ class UserRepo extends BaseRepository {
   }
 
   async createUserAndProfile(user) {
-    const transaction = await db.sequelize.transaction();
-
-    const createdUser = await this.create(user, { transaction });
-
-    const createdProfile = await db.UserProfile.create(
-      { ...user.profile, userId: createdUser.id },
-      { transaction }
-    );
-
-    await transaction.commit();
-    return { user: createdUser, profile: createdProfile };
+    return this.runTransaction(async (transaction) => {
+      const createdUser = await this.create(user, { transaction });
+      const createdProfile = await db.UserProfile.create(
+        { ...user.profile, userId: createdUser.id },
+        { transaction }
+      );
+      return { user: createdUser, profile: createdProfile };
+    });
   }
 
-  async getPermissions(searchQuery = {}) {
+  async getUsers(searchQuery = {}) {
     return this.findAll(searchQuery);
   }
 
-  async updatePermission(permission, id) {
+  async updateUser(user, id) {
     // R&D on find by id and update
-    return this.update(permission, { id }), this.findById(id);
+    return this.update(user, { id }), this.findById(id);
   }
 
   async findById(id) {
     return this.findOne({ id });
   }
 
-  async deletePermission(id, type = "soft") {
+  async deleteUser(id, type = "soft") {
     return this.delete(id, type);
   }
 
@@ -50,7 +47,7 @@ class UserRepo extends BaseRepository {
   //   return this.findOneWithInclude(searchQuery);
   // }
 
-  async isPermissionExists(id) {
+  async isUserExists(id) {
     return this.count({
       id,
     });
