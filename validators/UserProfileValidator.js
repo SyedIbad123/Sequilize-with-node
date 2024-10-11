@@ -24,8 +24,11 @@ class UserValidator extends BaseValidator {
 
   validateUpdateUserProfile = (userprofile) => {
     const schema = Joi.object().keys({
-      name: Joi.string().optional().label("Permission Name"),
-      module: Joi.string().optional().label("Module"),
+      contactNo: Joi.string().optional().label("Contact No"),
+      cnic: Joi.string().optional().label("cnic"),
+      city: Joi.string().optional().label("city"),
+      branch: Joi.string().optional().label("branch"),
+      userId: Joi.number().required().label("userId"),
       isDeleted: Joi.boolean().optional(),
     });
 
